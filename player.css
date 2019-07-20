@@ -36,6 +36,10 @@
     transition: all 0.2s;
 }
 
+.separator-time-video {
+    padding: 0px 3px;
+}
+
 .bar-video-player {
     width: 100%;
     height: 5px;
@@ -47,6 +51,23 @@
 .progess-bar-video-player {
     background-color: #fdcb6e;
     height: 5px;
+    position: relative;
+}
+
+.progess-bar-video-player:after {
+    content: '';
+    display: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    position: absolute;
+    right: -8px;
+    top: -5px;
+    background-color: #fdcb6e;
+}
+
+.bar-video-player:hover .progess-bar-video-player:after {
+    display: block;
 }
 
 .tool-video-player {
@@ -106,4 +127,13 @@ i.close-full-screen {
     height: 100%;
     width: 100%;
     display: flex;
+}
+
+i.play-center-video {
+    font-size: 45px;
+    color: white;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }

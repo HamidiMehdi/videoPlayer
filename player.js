@@ -6,12 +6,14 @@ let videoPlayerFunc = {
         video.play();
         $(video).next('.video-player-controls').find('i.play-video').css('display', 'none');
         $(video).next('.video-player-controls').find('i.pause-video').css('display', 'block');
+        $('i.play-center-video').css('display', 'none');
     },
     pauseVideo: function (el) {
         let video = videoPlayerFunc.findVideoElement(el);
         video.pause();
         $(video).next('.video-player-controls').find('i.play-video').css('display', 'block');
         $(video).next('.video-player-controls').find('i.pause-video').css('display', 'none');
+        $('i.play-center-video').css('display', 'block');
     },
     updateProgessBarVideo: function (video) {
         let progressBarPosition = video.currentTime / video.duration;
@@ -27,14 +29,14 @@ let videoPlayerFunc = {
         let currentTimeSpan = $(video).next('.video-player-controls').find('.current-time-video');
         let durationTimeSpan = $(video).next('.video-player-controls').find('.duration-time-video');
 
-        let currentHour = Math.floor(video.currentTime / 3600);
-        let currentMinute = Math.floor((video.currentTime / 60) % 60);
-        let currentSecond = Math.floor(video.currentTime % 60);
+        let currentHour = this.textFormatDurationVideo(Math.floor(video.currentTime / 3600));
+        let currentMinute = this.textFormatDurationVideo(Math.floor((video.currentTime / 60) % 60));
+        let currentSecond = this.textFormatDurationVideo(Math.floor(video.currentTime % 60));
         currentTimeSpan.text(currentHour > 0 ? currentHour + ":" : "" + currentMinute + ":" + currentSecond);
 
-        let durationHour = Math.floor(video.duration / 3600);
-        let durationMinute = Math.floor((video.duration / 60) % 60);
-        let durationSecond = Math.floor(video.duration % 60);
+        let durationHour = this.textFormatDurationVideo(Math.floor(video.duration / 3600));
+        let durationMinute = this.textFormatDurationVideo(Math.floor((video.duration / 60) % 60));
+        let durationSecond = this.textFormatDurationVideo(Math.floor(video.duration % 60));
         durationTimeSpan.text(durationHour > 0 ? durationHour + ":" : "" + durationMinute + ":" + durationSecond);
     },
     openVolume: function (el) {
@@ -96,11 +98,22 @@ let videoPlayerFunc = {
         let video = videoPlayerFunc.findVideoElement(el);
         let scrub = (e.offsetX /el.offsetWidth) * video.duration;
 
-        video.currentTime = scrub
+        video.currentTime = scrub;
+    },
+    btnPlayCenterVideo: function (el) {
+        let container = $(el).parents('.container-video')[0];
+        let btnPlay = $(container).find('i.play-video')
+        this.playVideo(btnPlay);
     },
     findVideoElement(el) {
         let container = $(el).parents('.container-video')[0];
         return $(container).find('.video')[0];
+    },
+    textFormatDurationVideo: function (time) {
+        if (time < 10) {
+            return "0" + time;
+        }
+        return time;
     }
 };
 
@@ -131,7 +144,10 @@ let videoPlayerListener = {
         });
         $('.bar-video-player').unbind().click(function (e) {
             videoPlayerFunc.scrubProgressBarVideo(this, e);
-        })
+        });
+        $('i.play-center-video').unbind().click(function () {
+            videoPlayerFunc.btnPlayCenterVideo(this);
+        });
     },
     onTimeUpdate: function () {
         $('video.video').unbind().bind('timeupdate', function () {
@@ -147,4 +163,8 @@ let videoPlayerListener = {
 
 $(document).ready(function () {
     videoPlayerListener.onLoad();
+
+    $('video.video').each(function () {
+        videoPlayerFunc.updateProgessBarVideo(this);
+    })
 });
