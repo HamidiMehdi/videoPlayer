@@ -92,6 +92,12 @@ let videoPlayerFunc = {
             videoPlayerFunc.videoFullScreen = undefined;
         }
     },
+    scrubProgressBarVideo: function (el, e) {
+        let video = videoPlayerFunc.findVideoElement(el);
+        let scrub = (e.offsetX /el.offsetWidth) * video.duration;
+
+        video.currentTime = scrub
+    },
     findVideoElement(el) {
         let container = $(el).parents('.container-video')[0];
         return $(container).find('.video')[0];
@@ -123,6 +129,9 @@ let videoPlayerListener = {
         $('i.close-full-screen').unbind().click(function () {
             videoPlayerFunc.closeFullScreen(this);
         });
+        $('.bar-video-player').unbind().click(function (e) {
+            videoPlayerFunc.scrubProgressBarVideo(this, e);
+        })
     },
     onTimeUpdate: function () {
         $('video.video').unbind().bind('timeupdate', function () {
