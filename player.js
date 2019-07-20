@@ -1,5 +1,6 @@
 'use strict';
 let videoPlayerFunc = {
+    videoFullScreen: undefined,
     playVideo: function (el) {
         let video = videoPlayerFunc.findVideoElement(el);
         video.play();
@@ -61,28 +62,36 @@ let videoPlayerFunc = {
             container.msRequestFullscreen();
         }
 
+        videoPlayerFunc.videoFullScreen = $(container).find('.video')[0];
         $(container).find('i.open-full-screen').css('display', 'none');
         $(container).find('i.close-full-screen').css('display', 'block');
     },
     closeFullScreen: function (el) {
         let container = $(el).parents('.container-video')[0];
-        console.log(container.requestFullscreen);
-        if (container.exitFullscreen) {
-            container.exitFullscreen();
-        } else if (container.webkitExitFullscreen) {
-            container.webkitExitFullscreen();
-        } else if (container.mozCancelFullScreen) {
-            container.mozCancelFullScreen();
-        } else if (container.msExitFullscreen) {
-            container.msExitFullscreen();
+
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
         }
 
-        // revoir pk ca marche pas le close full screen
+        videoPlayerFunc.videoFullScreen = undefined;
         $(container).find('i.open-full-screen').css('display', 'block');
         $(container).find('i.close-full-screen').css('display', 'none');
     },
 
-
+    fullScreenChange: function () {
+        if (document.webkitFullscreenElement === null && videoPlayerFunc.videoFullScreen !== undefined) {
+            let container = $(videoPlayerFunc.videoFullScreen).parents('.container-video')[0];
+            $(container).find('i.open-full-screen').css('display', 'block');
+            $(container).find('i.close-full-screen').css('display', 'none');
+            videoPlayerFunc.videoFullScreen = undefined;
+        }
+    },
     findVideoElement(el) {
         let container = $(el).parents('.container-video')[0];
         return $(container).find('.video')[0];
@@ -93,6 +102,7 @@ let videoPlayerListener = {
     onLoad: function () {
         videoPlayerListener.onClick();
         videoPlayerListener.onTimeUpdate();
+        videoPlayerListener.fullScreenChange();
     },
     onClick: function () {
         $('i.play-video').unbind().click(function () {
@@ -113,13 +123,16 @@ let videoPlayerListener = {
         $('i.close-full-screen').unbind().click(function () {
             videoPlayerFunc.closeFullScreen(this);
         });
-
-
     },
     onTimeUpdate: function () {
-        $('video.video').bind('timeupdate', function () {
+        $('video.video').unbind().bind('timeupdate', function () {
             videoPlayerFunc.updateProgessBarVideo(this);
         })
+    },
+    fullScreenChange: function () {
+        $(document).unbind().bind('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function (e) {
+            videoPlayerFunc.fullScreenChange();
+        });
     }
 };
 
