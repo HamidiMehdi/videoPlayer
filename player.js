@@ -3,17 +3,23 @@ let videoPlayerFunc = {
     videoFullScreen: undefined,
     playVideo: function (el) {
         let video = videoPlayerFunc.findVideoElement(el);
+        let container = $(el).parents('.container-video')[0];
+
         video.play();
         $(video).next('.video-player-controls').find('i.play-video').css('display', 'none');
         $(video).next('.video-player-controls').find('i.pause-video').css('display', 'block');
-        $('i.play-center-video').css('display', 'none');
+        let btnPlayMid = $(container).find('i.play-center-video')[0];
+        $(btnPlayMid).css('display', 'none');
     },
     pauseVideo: function (el) {
         let video = videoPlayerFunc.findVideoElement(el);
+        let container = $(el).parents('.container-video')[0];
+
         video.pause();
         $(video).next('.video-player-controls').find('i.play-video').css('display', 'block');
         $(video).next('.video-player-controls').find('i.pause-video').css('display', 'none');
-        $('i.play-center-video').css('display', 'block');
+        let btnPlayMid = $(container).find('i.play-center-video')[0];
+        $(btnPlayMid).css('display', 'block');
     },
     updateProgessBarVideo: function (video) {
         let progressBarPosition = video.currentTime / video.duration;
@@ -105,6 +111,13 @@ let videoPlayerFunc = {
         let btnPlay = $(container).find('i.play-video')
         this.playVideo(btnPlay);
     },
+    videoPlayPause: function (video) {
+      if (video.played) {
+          videoPlayerFunc.pauseVideo(video);
+      } else if (video.paused) {
+          videoPlayerFunc.playVideo(video);
+      }
+    },
     findVideoElement(el) {
         let container = $(el).parents('.container-video')[0];
         return $(container).find('.video')[0];
@@ -124,47 +137,52 @@ let videoPlayerListener = {
         videoPlayerListener.fullScreenChange();
     },
     onClick: function () {
-        $('i.play-video').unbind().click(function () {
+        $('i.play-video').off('click').click(function () {
             videoPlayerFunc.playVideo(this);
         });
-        $('i.pause-video').unbind().click(function () {
+        $('i.pause-video').off('click').click(function () {
             videoPlayerFunc.pauseVideo(this);
         });
-        $('i.volume-open').unbind().click(function () {
+        $('i.volume-open').off('click').click(function () {
             videoPlayerFunc.closeVolume(this);
         });
-        $('i.volume-close').unbind().click(function () {
+        $('i.volume-close').off('click').click(function () {
             videoPlayerFunc.openVolume(this);
         });
-        $('i.open-full-screen').unbind().click(function () {
+        $('i.open-full-screen').off('click').click(function () {
             videoPlayerFunc.openFullScreen(this);
         });
-        $('i.close-full-screen').unbind().click(function () {
+        $('i.close-full-screen').off('click').click(function () {
             videoPlayerFunc.closeFullScreen(this);
         });
-        $('.bar-video-player').unbind().click(function (e) {
+        $('.bar-video-player').off('click').click(function (e) {
             videoPlayerFunc.scrubProgressBarVideo(this, e);
         });
-        $('i.play-center-video').unbind().click(function () {
+        $('i.play-center-video').off('click').click(function () {
             videoPlayerFunc.btnPlayCenterVideo(this);
+        });
+        $('video.video').off('click').click(function () {
+            videoPlayerFunc.videoPlayPause(this);
         });
     },
     onTimeUpdate: function () {
-        $('video.video').unbind().bind('timeupdate', function () {
+        $('video.video').off('timeupdate').bind('timeupdate', function () {
             videoPlayerFunc.updateProgessBarVideo(this);
         })
     },
     fullScreenChange: function () {
-        $(document).unbind().bind('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function (e) {
+        $(document).off('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange')
+            .bind('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function () {
             videoPlayerFunc.fullScreenChange();
         });
     }
 };
 
 $(document).ready(function () {
-    videoPlayerListener.onLoad();
-
-    $('video.video').each(function () {
-        videoPlayerFunc.updateProgessBarVideo(this);
-    })
+    $(window).ready(function () {
+        videoPlayerListener.onLoad();
+        $('video.video').each(function () {
+            videoPlayerFunc.updateProgessBarVideo(this);
+        });
+    });
 });
