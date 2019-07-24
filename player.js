@@ -47,15 +47,28 @@ let videoPlayerFunc = {
     },
     openVolume: function (el) {
         let video = videoPlayerFunc.findVideoElement(el);
-        video.volume = 1;
         $(video).next('.video-player-controls').find('i.volume-close').css('display', 'none');
         $(video).next('.video-player-controls').find('i.volume-open').css('display', 'block');
+
+        let container = $(el).parents('.container-video')[0];
+        let inputVolume = $(container).find('input[type="range"]')[0];
+        video.volume = $(inputVolume).val() / 10;
     },
     closeVolume: function (el) {
         let video = videoPlayerFunc.findVideoElement(el);
         video.volume = 0;
         $(video).next('.video-player-controls').find('i.volume-close').css('display', 'block');
         $(video).next('.video-player-controls').find('i.volume-open').css('display', 'none');
+    },
+    soundVideoChanged: function (el) {
+        let video = videoPlayerFunc.findVideoElement(el);
+        let volume = $(el).val();
+        if (volume === 0) {
+            videoPlayerFunc.closeVolume(el)
+        } else {
+            videoPlayerFunc.openVolume(el)
+        }
+        video.volume = volume / 10;
     },
     openFullScreen: function (el) {
         let container = $(el).parents('.container-video')[0];
@@ -102,7 +115,7 @@ let videoPlayerFunc = {
     },
     scrubProgressBarVideo: function (el, e) {
         let video = videoPlayerFunc.findVideoElement(el);
-        let scrub = (e.offsetX /el.offsetWidth) * video.duration;
+        let scrub = (e.offsetX / el.offsetWidth) * video.duration;
 
         video.currentTime = scrub;
     },
@@ -112,11 +125,11 @@ let videoPlayerFunc = {
         this.playVideo(btnPlay);
     },
     videoPlayPause: function (video) {
-      if (video.played) {
-          videoPlayerFunc.pauseVideo(video);
-      } else if (video.paused) {
-          videoPlayerFunc.playVideo(video);
-      }
+        if (video.paused) {
+            videoPlayerFunc.playVideo(video);
+        } else {
+            videoPlayerFunc.pauseVideo(video);
+        }
     },
     findVideoElement(el) {
         let container = $(el).parents('.container-video')[0];
@@ -133,6 +146,7 @@ let videoPlayerFunc = {
 let videoPlayerListener = {
     onLoad: function () {
         videoPlayerListener.onClick();
+        videoPlayerListener.onChange();
         videoPlayerListener.onTimeUpdate();
         videoPlayerListener.fullScreenChange();
     },
@@ -143,10 +157,10 @@ let videoPlayerListener = {
         $('i.pause-video').off('click').click(function () {
             videoPlayerFunc.pauseVideo(this);
         });
-        $('i.volume-open').off('click').click(function () {
+        $('i.volume-open').off('click').click(function () { //
             videoPlayerFunc.closeVolume(this);
         });
-        $('i.volume-close').off('click').click(function () {
+        $('i.volume-close').off('click').click(function () { //
             videoPlayerFunc.openVolume(this);
         });
         $('i.open-full-screen').off('click').click(function () {
@@ -165,6 +179,11 @@ let videoPlayerListener = {
             videoPlayerFunc.videoPlayPause(this);
         });
     },
+    onChange: function () {
+        $('.sound-video-player input[type="range"]').change(function () {
+            videoPlayerFunc.soundVideoChanged(this);
+        });
+    },
     onTimeUpdate: function () {
         $('video.video').off('timeupdate').bind('timeupdate', function () {
             videoPlayerFunc.updateProgessBarVideo(this);
@@ -173,8 +192,8 @@ let videoPlayerListener = {
     fullScreenChange: function () {
         $(document).off('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange')
             .bind('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function () {
-            videoPlayerFunc.fullScreenChange();
-        });
+                videoPlayerFunc.fullScreenChange();
+            });
     }
 };
 
